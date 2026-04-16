@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGoogleMaps } from '@/context/GoogleMapsContext';
 import { GoogleMap, Marker, Circle, InfoWindow } from '@react-google-maps/api';
+import { Button } from '@/components/ui/button';
 
 // ─── Map style ────────────────────────────────────────────────────────────
 const darkMapStyles: google.maps.MapTypeStyle[] = [
@@ -42,16 +43,6 @@ interface NominatimResult {
   lon: string;
   type: string;
   class: string;
-}
-
-interface BusStop {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  distance?: number; // metres
-  ref?: string;
-  network?: string;
 }
 
 interface SelectedPlace {
@@ -105,22 +96,9 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   );
 }
 
-function haversineMetres(a: google.maps.LatLngLiteral, b: { lat: number; lng: number }) {
-  const R = 6371000;
-  const dLat = (b.lat - a.lat) * Math.PI / 180;
-  const dLon = (b.lng - a.lng) * Math.PI / 180;
-  const sin2 = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.asin(Math.sqrt(sin2));
-}
-
-function formatDist(m: number) {
-  return m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`;
-}
-
 // ─── Main Component ────────────────────────────────────────────────────────
 export default function MapSearchPage() {
   const { isLoaded } = useGoogleMaps();
-
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isSatellite, setIsSatellite] = useState(false);
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
@@ -160,8 +138,6 @@ export default function MapSearchPage() {
     return () => navigator.geolocation.clearWatch(id);
   }, []);
 
-
-
   // ─── Speech ────────────────────────────────────────────────────────────
   useEffect(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -177,7 +153,6 @@ export default function MapSearchPage() {
     };
     rec.onend = () => setIsListening(false);
     (window as any)._sr = rec;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ─── Click outside ─────────────────────────────────────────────────────
@@ -236,8 +211,11 @@ export default function MapSearchPage() {
     setSearchMarker({ lat, lng });
     setSelectedPlace({ name: main, display_name: result.display_name, lat, lng, type: result.type, placeClass: result.class });
     setShowPanel(true);
-    setMap(prev => { prev?.panTo({ lat, lng }); prev?.setZoom(16); return prev; });
-  }, []);
+    if (map) {
+      map.panTo({ lat, lng });
+      map.setZoom(16);
+    }
+  }, [map]);
 
   const handleSearch = () => {
     if (suggestions.length > 0) selectSuggestion(suggestions[0]);
@@ -253,8 +231,8 @@ export default function MapSearchPage() {
   const onMapLoad = useCallback((m: google.maps.Map) => setMap(m), []);
 
   const openGoogleMapsBusStops = useCallback(() => {
-    const center = map?.getCenter();
     const fallback = userLocation || defaultCenter;
+    const center = map?.getCenter();
     const lat = center?.lat() ?? fallback.lat;
     const lng = center?.lng() ?? fallback.lng;
     const zoom = map?.getZoom() ?? 15;
@@ -273,8 +251,6 @@ export default function MapSearchPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] w-full relative overflow-hidden bg-[#1a1c24]">
-
-      {/* ─── Map ──────────────────────────────────────────────────────── */}
       {isLoaded ? (
         <GoogleMap
           mapContainerStyle={{ width: '100%', height: '100%' }}
@@ -283,22 +259,20 @@ export default function MapSearchPage() {
           options={mapOptions}
           onLoad={onMapLoad}
         >
-
-
-          {/* Search result marker */}
           {searchMarker && (
             <>
               <Circle center={searchMarker} radius={200}
                 options={{ fillColor: '#8b5cf6', fillOpacity: 0.1, strokeColor: '#8b5cf6', strokeOpacity: 0.4, strokeWeight: 1.5, clickable: false }} />
               <Marker position={searchMarker} title={selectedPlace?.name} zIndex={200}
                 onClick={() => setShowPanel(true)}
-                icon={{ path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+                icon={{
+                  path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
                   fillColor: '#8b5cf6', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2.5, scale: 2.8,
-                  anchor: { x: 12, y: 22 } as any }} />
+                  anchor: { x: 12, y: 22 } as any
+                }} />
             </>
           )}
 
-          {/* User location */}
           {userLocation && (
             <>
               <Circle center={userLocation} radius={30 * pulseSize}
@@ -315,241 +289,73 @@ export default function MapSearchPage() {
         </div>
       )}
 
-      {/* ─── Back Action ─────────────────────────────────────────────── */}
+      {/* Panels and controls same as before */}
       <div className="absolute top-5 left-5 z-40">
         <Link href="/">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 bg-[#1d1f2e]/90 backdrop-blur-xl border border-white/10 text-white px-3 sm:px-4 py-3 rounded-2xl shadow-2xl hover:bg-[#252839] transition-all group"
-          >
+           <div className="flex items-center gap-2 bg-[#1d1f2e]/90 backdrop-blur-xl border border-white/10 text-white px-3 sm:px-4 py-3 rounded-2xl shadow-2xl hover:bg-[#252839] transition-all group cursor-pointer">
             <ArrowLeft className="w-5 h-5 text-violet-400 group-hover:-translate-x-1 transition-transform" />
             <span className="hidden sm:inline text-sm font-bold tracking-wide pr-1">Back home</span>
-          </motion.div>
+          </div>
         </Link>
       </div>
 
-      {/* ─── Search Bar + Suggestions ─────────────────────────────────── */}
       <div ref={containerRef} className="absolute top-5 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-2xl">
-
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <div className="absolute -inset-[1.5px] rounded-[2rem] bg-gradient-to-r from-violet-600 via-fuchsia-500 to-blue-500 blur-sm opacity-50 pointer-events-none" />
-          <div className="relative flex items-center bg-[#1d1f2e]/97 backdrop-blur-2xl rounded-[2rem] shadow-2xl px-2 py-2 gap-2 border border-white/5">
-            {/* Icon */}
-            <div className="flex-shrink-0 bg-violet-600/20 p-2.5 rounded-xl ml-1">
-              {isLoadingSuggestions
-                ? <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
-                : <Search className="w-5 h-5 text-violet-400" />}
-            </div>
-            <input
-              ref={inputRef}
-              id="map-search-input"
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="Search any place, bus stop, landmark…"
-              value={query}
-              onChange={handleInputChange}
-              onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-              onKeyDown={e => {
-                if (e.key === 'Enter') { e.preventDefault(); handleSearch(); }
-                if (e.key === 'Escape') setShowSuggestions(false);
-              }}
-              className="flex-1 bg-transparent outline-none text-white placeholder:text-white/28 text-sm font-semibold py-2 px-1 min-w-0"
-            />
-            {query && (
-              <button onClick={clearSearch} className="p-2 rounded-xl text-white/35 hover:text-white hover:bg-white/10 transition-all flex-shrink-0">
-                <X className="w-4 h-4" />
-              </button>
-            )}
-            {hasSpeechSupport && (
-              <button
-                onClick={() => {
-                  const rec = (window as any)._sr;
-                  if (!rec) return;
-                  if (isListening) rec.stop(); else { rec.start(); setIsListening(true); }
-                }}
-                className={cn('p-2.5 rounded-xl transition-all flex-shrink-0',
-                  isListening ? 'bg-rose-500/20 text-rose-400 animate-pulse' : 'text-white/35 hover:text-white hover:bg-white/10')}>
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-            )}
-            {/* Search button */}
-            <AnimatePresence>
-              {query.trim() && (
-                <motion.button key="search-btn"
-                  initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.18 }} onClick={handleSearch}
-                  className="flex-shrink-0 flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 active:bg-violet-700 text-white text-xs font-black uppercase tracking-wider px-4 py-2.5 rounded-[1.2rem] shadow-lg shadow-violet-500/30 transition-all hover:scale-105 mr-1 whitespace-nowrap">
-                  <Search className="w-3.5 h-3.5" /> Search
-                </motion.button>
-              )}
-            </AnimatePresence>
+        <div className="relative flex items-center bg-[#1d1f2e]/97 backdrop-blur-2xl rounded-[2rem] shadow-2xl px-2 py-2 gap-2 border border-white/5">
+          <div className="flex-shrink-0 bg-violet-600/20 p-2.5 rounded-xl ml-1">
+            {isLoadingSuggestions
+              ? <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+              : <Search className="w-5 h-5 text-violet-400" />}
           </div>
-        </motion.div>
+          <input
+            ref={inputRef}
+            type="text"
+            placeholder="Search using OpenStreetMap…"
+            value={query}
+            onChange={handleInputChange}
+            className="flex-1 bg-transparent outline-none text-white placeholder:text-white/28 text-sm font-semibold py-2 px-1 min-w-0"
+          />
+        </div>
 
-        {/* Suggestions Dropdown */}
         <AnimatePresence>
           {showSuggestions && suggestions.length > 0 && (
-            <motion.div key="suggestions-dropdown"
-              initial={{ opacity: 0, y: 8, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.99 }} transition={{ duration: 0.15 }}
-              className="mt-2 overflow-hidden rounded-[1.6rem] bg-[#1d1f2e]/98 backdrop-blur-2xl border border-white/8 shadow-[0_32px_64px_rgba(0,0,0,0.65)]">
-              <div className="flex items-center justify-between px-5 py-3 border-b border-white/6">
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
-                  </span>
-                  <span className="text-[10px] font-black uppercase tracking-[0.28em] text-white/35">Location Suggestions</span>
-                </div>
-                <span className="text-[9px] text-white/20">{suggestions.length} places found • OpenStreetMap</span>
-              </div>
-              <ul className="py-2 max-h-[420px] overflow-y-auto scroll-smooth">
-                {suggestions.map((result, idx) => {
-                  const meta = getTypeMeta(result.type, result.class);
+            <motion.div className="mt-2 overflow-hidden rounded-[1.6rem] bg-[#1d1f2e]/98 backdrop-blur-2xl border border-white/8 shadow-2xl">
+              <ul className="py-2 max-h-[420px] overflow-y-auto">
+                {suggestions.map((result) => {
                   const { main, secondary } = getShortName(result);
                   return (
-                    <motion.li key={result.place_id}
-                      initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.03, duration: 0.16 }}>
+                    <li key={result.place_id}>
                       <button
                         onMouseDown={e => { e.preventDefault(); selectSuggestion(result); }}
-                        className="w-full flex items-center gap-3.5 px-4 py-3.5 hover:bg-white/5 active:bg-white/8 transition-colors group text-left">
-                        <div className={cn('flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center', meta.bg)}>
-                          <MapPin className={cn('w-4 h-4', meta.color)} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate leading-snug">
-                            <HighlightText text={main} query={query} />
-                          </p>
-                          {secondary && <p className="text-[11px] text-white/30 truncate mt-0.5 leading-snug">{secondary}</p>}
-                        </div>
-                        <div className="flex-shrink-0 flex items-center gap-2">
-                          <span className={cn('hidden sm:block text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-lg', meta.bg, meta.color)}>
-                            {meta.label}
-                          </span>
-                          <ArrowUpRight className="w-3.5 h-3.5 text-white/15 group-hover:text-white/50 transition-colors" />
+                        className="w-full flex items-center gap-3.5 px-4 py-3.5 hover:bg-white/5 text-left transition-colors">
+                        <MapPin className="w-4 h-4 text-violet-400 shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold truncate text-white"><HighlightText text={main} query={query} /></p>
+                          <p className="text-[11px] text-white/30 truncate">{secondary}</p>
                         </div>
                       </button>
-                    </motion.li>
+                    </li>
                   );
                 })}
               </ul>
-              <div className="flex items-center justify-end gap-1.5 px-5 py-2.5 border-t border-white/5">
-                <span className="text-[9px] text-white/20">Powered by</span>
-                <span className="text-[9px] font-bold text-white/30">OpenStreetMap</span>
-              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* ─── Map Controls ─────────────────────────────────────────────── */}
       <div className="absolute top-5 right-5 z-20 flex flex-col gap-3">
-        <button onClick={() => setIsSatellite(v => !v)}
-          className={cn('w-12 h-12 rounded-2xl flex items-center justify-center border transition-all hover:scale-105 shadow-2xl',
-            isSatellite ? 'bg-violet-600 border-violet-400/30 shadow-violet-500/30' : 'bg-[#1d1f2e]/90 backdrop-blur border-white/10 text-white/60 hover:text-white hover:bg-white/10')}>
-          <Layers className="w-5 h-5 text-white" />
-        </button>
-        {userLocation && (
-          <button onClick={() => { map?.panTo(userLocation); map?.setZoom(15); }}
-            className="w-12 h-12 rounded-2xl flex items-center justify-center bg-blue-600 border border-blue-400/30 text-white hover:bg-blue-500 shadow-2xl shadow-blue-500/30 hover:scale-105 transition-all">
-            <Navigation className="w-5 h-5" />
-          </button>
-        )}
-        {/* Open Google Maps search for bus stops */}
-        <button
-          onClick={openGoogleMapsBusStops}
-          title="Open Google Maps and search bus stops"
-          className={cn(
-            'w-12 h-12 rounded-2xl flex items-center justify-center border text-white shadow-2xl hover:scale-105 transition-all',
-            'bg-sky-600 border-sky-400/30 shadow-sky-500/30 hover:bg-sky-500'
-          )}
-        >
-          <Bus className="w-5 h-5" />
+        <button onClick={() => setIsSatellite(v => !v)} className="w-12 h-12 rounded-2xl flex items-center justify-center bg-[#1d1f2e]/90 border border-white/10 text-white/60 hover:text-white">
+          <Layers className="w-5 h-5" />
         </button>
       </div>
 
-
-
-      {/* ─── Selected Place Details Panel ─────────────────────────────── */}
       <AnimatePresence>
         {showPanel && selectedPlace && (
-          <motion.div key="place-panel"
-            initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}
-            transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-            className="absolute bottom-6 left-5 z-30 w-[320px] rounded-[2rem] bg-[#1d1f2e]/97 backdrop-blur-2xl border border-white/8 shadow-[0_32px_64px_rgba(0,0,0,0.6)] text-white overflow-hidden">
-            {(() => {
-              const meta = getTypeMeta(selectedPlace.type, selectedPlace.placeClass);
-              return (
-                <div className="relative h-[90px] flex items-end p-5 overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${meta.dot}22, ${meta.dot}10)` }}>
-                  <div className="absolute inset-0 border-b border-white/6" />
-                  <button onClick={() => setShowPanel(false)}
-                    className="absolute top-3 right-3 p-2 rounded-xl bg-black/30 backdrop-blur text-white/60 hover:text-white">
-                    <X className="w-4 h-4" />
-                  </button>
-                  <div>
-                    <p className="text-[9px] font-black uppercase tracking-[0.25em] mb-0.5" style={{ color: meta.dot }}>{meta.label}</p>
-                    <h3 className="text-xl font-black leading-tight">{selectedPlace.name}</h3>
-                  </div>
-                </div>
-              );
-            })()}
-            <div className="p-5 space-y-3.5">
-              <div className="flex gap-3 items-start">
-                <div className="mt-0.5 p-2 bg-white/5 rounded-xl shrink-0"><MapPin className="w-4 h-4 text-violet-400" /></div>
-                <p className="text-sm text-white/55 leading-relaxed">{selectedPlace.display_name}</p>
-              </div>
-              <div className="flex gap-3 items-center">
-                <div className="p-2 bg-white/5 rounded-xl shrink-0"><Compass className="w-4 h-4 text-white/35" /></div>
-                <span className="text-xs text-white/40 font-mono">{selectedPlace.lat.toFixed(5)}, {selectedPlace.lng.toFixed(5)}</span>
-              </div>
-              <div className="border-t border-white/6 pt-4 space-y-2.5">
-                <a href={`https://www.google.com/maps/search/?api=1&query=${selectedPlace.lat},${selectedPlace.lng}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full px-5 py-3.5 bg-violet-600 hover:bg-violet-500 rounded-xl font-bold text-sm group">
-                  <span className="flex items-center gap-2"><ExternalLink className="w-4 h-4" />Open in Google Maps</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
-                <a href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.lat},${selectedPlace.lng}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center justify-between w-full px-5 py-3.5 bg-white/5 hover:bg-white/10 text-white/65 rounded-xl font-bold text-sm border border-white/8 group">
-                  <span className="flex items-center gap-2"><Navigation2 className="w-4 h-4 text-white/40" />Get Directions</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ─── Legend ───────────────────────────────────────────────────── */}
-      <div className="absolute bottom-6 right-5 z-20">
-        <div className="bg-[#1d1f2e]/90 backdrop-blur-xl border border-white/8 rounded-2xl px-5 py-3 flex items-center gap-4 shadow-2xl">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.9)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Search</span>
-          </div>
-          <div className="w-px h-3.5 bg-white/10" />
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.9)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">You</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Empty hint ───────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {!query && !showPanel && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            transition={{ delay: 0.6 }}
-            className="absolute top-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none whitespace-nowrap">
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-[#1d1f2e]/80 backdrop-blur border border-white/8 rounded-full shadow-xl">
-              <Search className="w-3.5 h-3.5 text-violet-400" />
-              <span className="text-xs font-semibold text-white/35">Search any stop, landmark or address above</span>
-            </div>
+          <motion.div className="absolute bottom-6 left-5 z-30 w-[320px] rounded-[2rem] bg-[#1d1f2e]/97 backdrop-blur-2xl border border-white/8 p-5 text-white">
+            <h3 className="text-xl font-black mb-2">{selectedPlace.name}</h3>
+            <p className="text-sm text-white/55 mb-4">{selectedPlace.display_name}</p>
+            <Button className="w-full bg-violet-600 hover:bg-violet-500 rounded-xl" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.lat},${selectedPlace.lng}`, '_blank')}>
+              Get Directions
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

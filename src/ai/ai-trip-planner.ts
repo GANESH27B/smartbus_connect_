@@ -69,10 +69,10 @@ const AiTripPlannerOutputSchema = z.object({
   steps: z.array(z.object({
     instruction: z.string().describe('The main instruction for this step (e.g., "Take Bus 502").'),
     schedule: z.string().describe('The departure time or duration for this step.'),
-    arrivalTime: z.string().optional().describe('The estimated arrival time at the destination of this step.'),
+    arrivalTime: z.string().nullable().optional().describe('The estimated arrival time at the destination of this step.'),
     locationName: z.string().describe('The name of the location for this step.'),
     description: z.string().describe('A clear, detailed description of what to do or expect at this step.'),
-    landmark: z.string().optional().describe('A notable landmark to look for at this location.'),
+    landmark: z.string().nullable().optional().describe('A notable landmark to look for at this location. Use null or empty string if no landmark is available.'),
   })).describe('A detailed list of steps for the trip.'),
   eta: z.string().describe('The total estimated time of arrival for the trip (e.g., "25 minutes").'),
   estimatedCost: z.string().describe('The estimated total cost of the trip (e.g., "₹45.00").'),
@@ -111,7 +111,7 @@ const prompt = ai.definePrompt({
      - arrivalTime: (For transit) The time it reaches the next stop. ALWAYS INCLUDE AM/PM (e.g. "11:00 AM").
      - locationName: The name of the transit point, stop, or intersection.
      - description: A clear, helpful description of the step (e.g. "Walk 500m north", "Negotate for ₹50 with the auto driver").
-     - landmark: (Optional) A recognizable building or sign nearby.
+     - landmark: (Optional) A recognizable building or sign nearby. If none, use null or an empty string.
   3. Total estimated travel time (eta).
   4. Total estimated cost (estimatedCost) in local currency (e.g. ₹60), adjusted for the number of passengers, trip duration, and including estimated auto fares.
 

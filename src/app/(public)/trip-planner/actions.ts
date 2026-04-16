@@ -71,9 +71,9 @@ export async function planTripAction(values: z.infer<typeof formSchema>): Promis
         return {
           instruction: step.instruction,
           departureTime: step.schedule,
-          arrivalTime: step.arrivalTime,
+          arrivalTime: step.arrivalTime || undefined,
           description: step.description,
-          landmark: step.landmark,
+          landmark: step.landmark || undefined,
           busNumber: step.instruction.match(/bus (\w+)/i)?.[1] || undefined,
         }
       })

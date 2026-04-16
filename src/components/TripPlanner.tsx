@@ -9,7 +9,6 @@ import { planTripAction } from "@/app/(public)/trip-planner/actions";
 import type { TripPlan } from "@/lib/types";
 import { useAuth } from "@/context/AuthContext";
 
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -37,8 +36,7 @@ import {
 import { ArrowRight, Bot, Bus, Clock, Loader2, MapPin, PersonStanding, TramFront, ExternalLink, Mic, MicOff, Code, ChevronDown, Navigation2, ArrowUpDown, Users, Calendar, Coins, Car } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Autocomplete } from "@react-google-maps/api";
-import { useGoogleMaps } from "@/context/GoogleMapsContext";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { useRef } from "react";
 
 const formSchema = z.object({
@@ -60,9 +58,8 @@ export function TripPlanner() {
   const [isListening, setIsListening] = useState(false);
   const [hasSpeechSupport, setHasSpeechSupport] = useState(false);
 
-  const startAutocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const destinationAutocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const { isLoaded } = useGoogleMaps();
+  const startAutocompleteRef = useRef<any>(null);
+  const destinationAutocompleteRef = useRef<any>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -234,8 +231,8 @@ export function TripPlanner() {
     form.setValue("start", item.origin);
     form.setValue("destination", item.destination);
     setTripPlan(item.plan);
-    localStorage.setItem("lastTripInput", JSON.stringify({ 
-      start: item.origin, 
+    localStorage.setItem("lastTripInput", JSON.stringify({
+      start: item.origin,
       destination: item.destination,
       passengers: form.getValues("passengers"),
       days: form.getValues("days"),
@@ -276,14 +273,14 @@ export function TripPlanner() {
           const { latitude, longitude } = position.coords;
           form.setValue("start", `${latitude}, ${longitude}`);
 
-          if (window.google && isLoaded) {
-            const geocoder = new google.maps.Geocoder();
-            geocoder.geocode({ location: { lat: latitude, lng: longitude } }, (results, status) => {
-              if (status === "OK" && results?.[0]) {
-                form.setValue("start", results[0].formatted_address);
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.display_name) {
+                form.setValue("start", data.display_name);
               }
-            });
-          }
+            })
+            .catch(err => console.error("Reverse geocoding error:", err));
         },
         (error) => {
           console.error("Location error:", error);
@@ -342,27 +339,17 @@ export function TripPlanner() {
                         </Button>
                       </FormLabel>
                       <FormControl>
-                        {isLoaded ? (
-                          <Autocomplete
-                            onLoad={(ac) => (startAutocompleteRef.current = ac)}
-                            onPlaceChanged={() => {
-                              const place = startAutocompleteRef.current?.getPlace();
-                              if (place?.formatted_address) {
-                                form.setValue("start", place.formatted_address);
-                              }
-                            }}
-                          >
-                            <Input placeholder="e.g., India Gate, New Delhi" {...field} className="rounded-xl border-white/10 bg-muted/40" />
-                          </Autocomplete>
-                        ) : (
-                          <Input placeholder="Loading map engine..." disabled {...field} className="rounded-xl border-white/10 bg-muted/40" />
-                        )}
+                        <AddressAutocomplete
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="e.g., India Gate, New Delhi"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex justify-center -my-2 relative z-10">
                   <Button
                     type="button"
@@ -391,21 +378,11 @@ export function TripPlanner() {
                         <div className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
                       </FormLabel>
                       <FormControl>
-                        {isLoaded ? (
-                          <Autocomplete
-                            onLoad={(ac) => (destinationAutocompleteRef.current = ac)}
-                            onPlaceChanged={() => {
-                              const place = destinationAutocompleteRef.current?.getPlace();
-                              if (place?.formatted_address) {
-                                form.setValue("destination", place.formatted_address);
-                              }
-                            }}
-                          >
-                            <Input placeholder="e.g., Red Fort, New Delhi" {...field} className="rounded-xl border-white/10 bg-muted/40" />
-                          </Autocomplete>
-                        ) : (
-                          <Input placeholder="Loading map engine..." disabled {...field} className="rounded-xl border-white/10 bg-muted/40" />
-                        )}
+                        <AddressAutocomplete
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="e.g., Red Fort, New Delhi"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -422,13 +399,13 @@ export function TripPlanner() {
                           Passengers
                         </FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            min={1} 
-                            placeholder="1" 
-                            {...field} 
+                          <Input
+                            type="number"
+                            min={1}
+                            placeholder="1"
+                            {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                            className="rounded-xl border-white/10 bg-muted/40" 
+                            className="rounded-xl border-white/10 bg-muted/40"
                           />
                         </FormControl>
                         <FormMessage />
@@ -445,13 +422,13 @@ export function TripPlanner() {
                           No. of Days
                         </FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            min={1} 
-                            placeholder="1" 
-                            {...field} 
+                          <Input
+                            type="number"
+                            min={1}
+                            placeholder="1"
+                            {...field}
                             onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
-                            className="rounded-xl border-white/10 bg-muted/40" 
+                            className="rounded-xl border-white/10 bg-muted/40"
                           />
                         </FormControl>
                         <FormMessage />
@@ -702,6 +679,3 @@ export function TripPlanner() {
     </div>
   );
 }
-
-
-
