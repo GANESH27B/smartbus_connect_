@@ -91,8 +91,8 @@ export default function LeafletMap({
       zoomControl={false}
     >
       <TileLayer
-        url={isSatellite 
-          ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' 
+        url={isSatellite
+          ? 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
           : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'}
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
       />
@@ -107,8 +107,8 @@ export default function LeafletMap({
             radius={30 * pulseSize}
             pathOptions={{ fillColor: '#3b82f6', fillOpacity: 0.2, color: '#3b82f6', weight: 1 }}
           />
-          <Marker 
-            position={[userLocation.lat, userLocation.lng]} 
+          <Marker
+            position={[userLocation.lat, userLocation.lng]}
             icon={userIcon}
           >
             <Popup>Your Location</Popup>
@@ -118,8 +118,8 @@ export default function LeafletMap({
 
       {/* Search Marker */}
       {searchMarker && (
-        <Marker 
-          position={[searchMarker.lat, searchMarker.lng]} 
+        <Marker
+          position={[searchMarker.lat, searchMarker.lng]}
           icon={searchResultIcon}
           eventHandlers={{ click: () => onMarkerClick?.(searchMarker) }}
         >
@@ -147,20 +147,20 @@ export default function LeafletMap({
 
       {/* Stops */}
       {stops.map(stop => (
-          <Marker
-            key={stop.id}
-            position={[stop.lat, stop.lng]}
-            icon={stopIcon(stop.cityType === 2 ? '#f59e0b' : stop.cityType === 3 ? '#10b981' : '#f43f5e')}
-            eventHandlers={{ click: () => onMarkerClick?.(stop) }}
-          >
-            <Popup>
-              <div className="p-2">
-                <h3 className="font-bold">{stop.name}</h3>
-                <p className="text-sm">Stop ID: {stop.id}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <Marker
+          key={stop.id}
+          position={[stop.lat, stop.lng]}
+          icon={stopIcon(stop.cityType === 2 ? '#f59e0b' : stop.cityType === 3 ? '#10b981' : '#f43f5e')}
+          eventHandlers={{ click: () => onMarkerClick?.(stop) }}
+        >
+          <Popup>
+            <div className="p-2">
+              <h3 className="font-bold">{stop.name}</h3>
+              <p className="text-sm">Stop ID: {stop.id}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
     </MapContainer>
   );
 }

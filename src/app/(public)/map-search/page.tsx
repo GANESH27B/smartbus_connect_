@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGoogleMaps } from '@/context/GoogleMapsContext';
 import { GoogleMap, Marker, Circle, InfoWindow } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/context/LanguageContext';
 
 // ─── Map style ────────────────────────────────────────────────────────────
 const darkMapStyles: google.maps.MapTypeStyle[] = [
@@ -98,6 +99,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 
 // ─── Main Component ────────────────────────────────────────────────────────
 export default function MapSearchPage() {
+  const { t } = useLanguage();
   const { isLoaded } = useGoogleMaps();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isSatellite, setIsSatellite] = useState(false);
@@ -285,16 +287,16 @@ export default function MapSearchPage() {
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
           <Compass className="w-12 h-12 text-violet-500 animate-spin" />
-          <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Initialising Maps…</p>
+          <p className="text-white/50 text-xs font-bold uppercase tracking-widest">{t('map_initializing')}</p>
         </div>
       )}
 
-      {/* Panels and controls same as before */}
+      {/* Panels and controls */}
       <div className="absolute top-5 left-5 z-40">
         <Link href="/">
-           <div className="flex items-center gap-2 bg-[#1d1f2e]/90 backdrop-blur-xl border border-white/10 text-white px-3 sm:px-4 py-3 rounded-2xl shadow-2xl hover:bg-[#252839] transition-all group cursor-pointer">
+          <div className="flex items-center gap-2 bg-[#1d1f2e]/90 backdrop-blur-xl border border-white/10 text-white px-3 sm:px-4 py-3 rounded-2xl shadow-2xl hover:bg-[#252839] transition-all group cursor-pointer">
             <ArrowLeft className="w-5 h-5 text-violet-400 group-hover:-translate-x-1 transition-transform" />
-            <span className="hidden sm:inline text-sm font-bold tracking-wide pr-1">Back home</span>
+            <span className="hidden sm:inline text-sm font-bold tracking-wide pr-1">{t('map_back_home')}</span>
           </div>
         </Link>
       </div>
@@ -309,7 +311,7 @@ export default function MapSearchPage() {
           <input
             ref={inputRef}
             type="text"
-            placeholder="Search using OpenStreetMap…"
+            placeholder={t('map_search_placeholder')}
             value={query}
             onChange={handleInputChange}
             className="flex-1 bg-transparent outline-none text-white placeholder:text-white/28 text-sm font-semibold py-2 px-1 min-w-0"
@@ -350,11 +352,11 @@ export default function MapSearchPage() {
 
       <AnimatePresence>
         {showPanel && selectedPlace && (
-          <motion.div className="absolute bottom-6 left-5 z-30 w-[320px] rounded-[2rem] bg-[#1d1f2e]/97 backdrop-blur-2xl border border-white/8 p-5 text-white">
+          <motion.div className="absolute bottom-6 left-5 z-30 w-[320px] rounded-[2rem] bg-[#1d1f2e]/97 backdrop-blur-2xl border border-white/8 p-5 text-white shadow-2xl">
             <h3 className="text-xl font-black mb-2">{selectedPlace.name}</h3>
             <p className="text-sm text-white/55 mb-4">{selectedPlace.display_name}</p>
             <Button className="w-full bg-violet-600 hover:bg-violet-500 rounded-xl" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.lat},${selectedPlace.lng}`, '_blank')}>
-              Get Directions
+              {t('map_directions')}
             </Button>
           </motion.div>
         )}

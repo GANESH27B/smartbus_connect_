@@ -8,12 +8,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogOut, MapPin, Calendar, Clock, User as UserIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
+import { Separator } from "@/components/ui/separator";
+
+import { useLanguage, Language } from "@/context/LanguageContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TripHistoryItem {
     _id: string;
     origin: string;
     destination: string;
     date: string;
+    description?: string;
     plan: {
         totalTime: string;
         estimatedCost?: string;
@@ -23,6 +29,7 @@ interface TripHistoryItem {
 
 export default function ProfilePage() {
     const { user, loading, signOut } = useAuth();
+    const { t, language, setLanguage } = useLanguage();
     const router = useRouter();
     const [trips, setTrips] = useState<TripHistoryItem[]>([]);
     const [loadingTrips, setLoadingTrips] = useState(true);
@@ -66,44 +73,101 @@ export default function ProfilePage() {
         ? user.displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()
         : "U";
 
+    const languages = [
+        { code: 'en', name: 'English' },
+        { code: 'hi', name: 'हिन्दी (Hindi)' },
+        { code: 'ta', name: 'தமிழ் (Tamil)' },
+        { code: 'te', name: 'తెలుగు (Telugu)' },
+        { code: 'kn', name: 'ಕನ್ನಡ (Kannada)' },
+        { code: 'ml', name: 'മലയാളം (Malayalam)' },
+        { code: 'mr', name: 'मराठी (Marathi)' },
+        { code: 'bn', name: 'বাংলা (Bengali)' },
+        { code: 'gu', name: 'ગુજરાતી (Gujarati)' },
+        { code: 'pa', name: 'ਪੰਜਾਬੀ (Punjabi)' },
+    ];
+
     return (
-        <div className="container mx-auto py-12 px-4 md:px-6 max-w-5xl">
+        <div className="container mx-auto py-12 px-4 md:px-6 max-w-6xl">
+            {/* Vibrant User Band */}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative overflow-hidden rounded-[2rem] p-8 md:p-12 mb-12 shadow-2xl"
+            >
+                <div className="absolute inset-0 bg-vibrant-gradient opacity-90 z-0"></div>
+                <div className="absolute top-[-50%] right-[-10%] w-[400px] h-[400px] bg-white/20 blur-[100px] rounded-full animate-blob"></div>
+
+                <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+                    <Avatar className="h-28 w-28 border-4 border-white/50 shadow-xl">
+                        <AvatarImage src={user.photoURL || ""} alt={user.displayName || "User"} />
+                        <AvatarFallback className="text-3xl font-bold bg-white text-primary">{initials}</AvatarFallback>
+                    </Avatar>
+
+                    <div className="text-center md:text-left space-y-2">
+                        <h1 className="text-4xl md:text-5xl font-black text-white font-headline tracking-tight italic">
+                            {user.displayName || "User"}
+                        </h1>
+                        <p className="text-white/80 text-lg font-medium">{user.email}</p>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
+                            <Badge className="bg-white/20 hover:bg-white/30 text-white border-white/20 backdrop-blur-md px-4 py-1.5 rounded-full">
+                                {t('profile_standard_member')}
+                            </Badge>
+                            <Badge className="bg-emerald-500/20 text-emerald-100 border-emerald-500/30 backdrop-blur-md px-4 py-1.5 rounded-full flex items-center gap-2">
+                                <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                                Active Now
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
             <div className="grid gap-8 md:grid-cols-3">
-                {/* User Profile Card */}
+                {/* Profile Settings Card */}
                 <div className="md:col-span-1">
-                    <Card className="sticky top-24">
-                        <CardHeader className="text-center">
-                            <div className="mx-auto mb-4 relative">
-                                <Avatar className="h-24 w-24 border-4 border-primary/10">
-                                    <AvatarImage src={user.photoURL || ""} alt={user.displayName || "User"} />
-                                    <AvatarFallback className="text-2xl font-bold bg-primary text-primary-foreground">{initials}</AvatarFallback>
-                                </Avatar>
-                                <div className="absolute bottom-0 right-0 bg-green-500 w-4 h-4 rounded-full border-2 border-background" title="Online"></div>
-                            </div>
-                            <CardTitle className="text-2xl">{user.displayName || "User"}</CardTitle>
-                            <CardDescription className="break-all">{user.email}</CardDescription>
+                    <Card className="rounded-[2rem] border-none shadow-xl bg-card/40 backdrop-blur-xl overflow-hidden">
+                        <div className="h-2 bg-vibrant-gradient"></div>
+                        <CardHeader>
+                            <CardTitle className="text-2xl font-bold">{t('profile_language')}</CardTitle>
+                            <CardDescription>Select your native language for better accessibility.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="bg-muted p-4 rounded-lg flex items-center gap-3">
-                                <div className="bg-primary/10 p-2 rounded-full">
-                                    <UserIcon className="h-4 w-4 text-primary" />
+                        <CardContent className="space-y-6">
+                            <div className="space-y-3">
+                                <Select value={language} onValueChange={(val) => setLanguage(val as Language)}>
+                                    <SelectTrigger className="w-full h-12 rounded-xl border-primary/20 bg-background/50">
+                                        <SelectValue placeholder="Select Language" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {languages.map((lang) => (
+                                            <SelectItem key={lang.code} value={lang.code} className="cursor-pointer">
+                                                {lang.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <Separator />
+
+                            <div className="bg-muted/50 p-4 rounded-2xl flex items-center gap-3">
+                                <div className="bg-primary/20 p-2 rounded-xl">
+                                    <UserIcon className="h-5 w-5 text-primary" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs text-muted-foreground font-medium uppercase">Account Type</p>
-                                    <p className="text-sm font-semibold">Standard Member</p>
+                                    <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider">{t('profile_account_type')}</p>
+                                    <p className="text-sm font-bold">{t('profile_standard_member')}</p>
                                 </div>
                             </div>
 
                             <Button
                                 variant="destructive"
-                                className="w-full gap-2"
+                                className="w-full h-12 rounded-xl gap-2 font-bold shadow-lg shadow-rose-500/20 hover:scale-[1.02] transition-transform"
                                 onClick={() => {
                                     signOut();
                                     router.push("/");
                                 }}
                             >
                                 <LogOut className="h-4 w-4" />
-                                Sign Out
+                                {t('profile_sign_out')}
                             </Button>
                         </CardContent>
                     </Card>
@@ -112,8 +176,8 @@ export default function ProfilePage() {
                 {/* Trip History Section */}
                 <div className="md:col-span-2 space-y-6">
                     <div>
-                        <h2 className="text-2xl font-bold font-headline mb-2">My Trip History</h2>
-                        <p className="text-muted-foreground">View your recent AI-planned journeys.</p>
+                        <h2 className="text-3xl font-black font-headline mb-2 italic">{t('profile_trips')}</h2>
+                        <p className="text-muted-foreground">{language === 'en' ? 'View your recent AI-planned journeys.' : t('profile_trips_desc') || 'View your recent AI-planned journeys.'}</p>
                     </div>
 
                     {loadingTrips ? (
@@ -172,9 +236,9 @@ export default function ProfilePage() {
                                 <div className="bg-muted p-4 rounded-full mb-4">
                                     <MapPin className="h-8 w-8 text-muted-foreground/50" />
                                 </div>
-                                <h3 className="text-lg font-semibold mb-1">No trips found</h3>
-                                <p className="mb-6">You haven't planned any trips yet.</p>
-                                <Button onClick={() => router.push("/trip-planner")}>Plan a Trip</Button>
+                                <h3 className="text-lg font-semibold mb-1">{t('profile_no_trips')}</h3>
+                                <p className="mb-6">{t('profile_no_trips_desc') || "You haven't planned any trips yet."}</p>
+                                <Button onClick={() => router.push("/trip-planner")}>{t('profile_plan_trip')}</Button>
                             </CardContent>
                         </Card>
                     )}

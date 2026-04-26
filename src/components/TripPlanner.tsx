@@ -38,6 +38,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
 import { useRef } from "react";
+import { useLanguage } from "@/context/LanguageContext";
 
 const formSchema = z.object({
   start: z.string().min(3, { message: "Please enter a valid starting location." }),
@@ -46,12 +47,14 @@ const formSchema = z.object({
   passengers: z.number().min(1, "At least 1 passenger required"),
   days: z.number().min(1, "At least 1 day required"),
   style: z.enum(["Simple", "Medium", "Luxury"]),
+  language: z.string().optional(),
 });
 
 // A global variable to hold the SpeechRecognition instance, so it can be accessed across renders.
 let speechRecognition: any = null;
 
 export function TripPlanner() {
+  const { t, language } = useLanguage();
   const [tripPlan, setTripPlan] = useState<TripPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,8 +73,14 @@ export function TripPlanner() {
       passengers: 1,
       days: 1,
       style: "Simple",
+      language: language,
     },
   });
+
+  // Update form language when context language changes
+  useEffect(() => {
+    form.setValue('language', language);
+  }, [language, form]);
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -79,7 +88,7 @@ export function TripPlanner() {
       setHasSpeechSupport(true);
       speechRecognition = new SpeechRecognition();
       speechRecognition.continuous = false;
-      speechRecognition.lang = 'en-US';
+      speechRecognition.lang = language === 'en' ? 'en-US' : (language === 'hi' ? 'hi-IN' : 'en-US');
       speechRecognition.interimResults = false;
 
       speechRecognition.onresult = (event: any) => {
@@ -100,7 +109,7 @@ export function TripPlanner() {
     } else {
       setHasSpeechSupport(false);
     }
-  }, [form]);
+  }, [form, language]);
 
 
   const { user } = useAuth(); // Get user from context
@@ -129,6 +138,7 @@ export function TripPlanner() {
           passengers: parsedInput.passengers || 1,
           days: parsedInput.days || 1,
           style: parsedInput.style || "Simple",
+          language: language,
         });
       } catch (e) {
         console.error("Failed to parse saved input", e);
@@ -156,7 +166,7 @@ export function TripPlanner() {
         }
       }
     }
-  }, [form, user]);
+  }, [form, user, language]);
 
   const fetchHistoryFromAPI = async () => {
     try {
@@ -178,7 +188,7 @@ export function TripPlanner() {
     // Save inputs locally for recovery
     localStorage.setItem("lastTripInput", JSON.stringify(values));
 
-    const result = await planTripAction(values);
+    const result = await planTripAction({ ...values, language });
     if (result.success && result.data) {
       setTripPlan(result.data);
       // Save result locally for recovery
@@ -308,10 +318,10 @@ export function TripPlanner() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bot className="h-6 w-6" />
-              AI Trip Planner
+              {t('feature_ai_title')}
             </CardTitle>
             <CardDescription>
-              Enter your start and end points, and we'll find the best route for you.
+              {t('feature_ai_desc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -324,7 +334,7 @@ export function TripPlanner() {
                     <FormItem>
                       <FormLabel className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          Starting Point
+                          {t('planner_start')}
                           <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                         </div>
                         <Button
@@ -374,7 +384,7 @@ export function TripPlanner() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
-                        Destination
+                        {t('planner_dest')}
                         <div className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
                       </FormLabel>
                       <FormControl>
@@ -468,7 +478,7 @@ export function TripPlanner() {
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes for Planner (Optional)</FormLabel>
+                      <FormLabel>{t('planner_notes')}</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Textarea placeholder="e.g., Avoid transfers, prefer scenic route..." {...field} className={cn(hasSpeechSupport && "pr-12")} />
@@ -497,11 +507,11 @@ export function TripPlanner() {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Planning...
+                      {t('planner_loading')}
                     </>
                   ) : (
                     <>
-                      Plan My Trip <ArrowRight className="ml-2 h-4 w-4" />
+                      {t('planner_button')} <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -540,7 +550,7 @@ export function TripPlanner() {
       <div className="md:col-span-3">
         <Card className="min-h-full">
           <CardHeader>
-            <CardTitle>Your Suggested Itinerary</CardTitle>
+            <CardTitle>{t('planner_summary')}</CardTitle>
             <CardDescription>Follow these steps to reach your destination.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -558,7 +568,7 @@ export function TripPlanner() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex justify-between items-center bg-muted/50 dark:bg-secondary p-4 rounded-2xl">
                     <div>
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Total Time</h3>
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{t('planner_eta')}</h3>
                       <div className="flex items-center gap-2 text-xl font-bold text-primary">
                         <Clock className="h-5 w-5" />
                         <span>{tripPlan.totalTime}</span>
@@ -568,7 +578,7 @@ export function TripPlanner() {
                   {tripPlan.estimatedCost && (
                     <div className="flex justify-between items-center bg-muted/50 dark:bg-secondary p-4 rounded-2xl border border-primary/10">
                       <div>
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">Est. Fare</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{t('planner_cost')}</h3>
                         <div className="flex items-center gap-2 text-xl font-bold text-emerald-500">
                           <span className="text-2xl">₹</span>
                           <span>{tripPlan.estimatedCost.replace('₹', '')}</span>

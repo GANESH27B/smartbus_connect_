@@ -30,7 +30,7 @@ export default function CrowdInsightsPage() {
     return "text-rose-500";
   };
 
-  const filteredBuses = mockBuses.filter(bus => 
+  const filteredBuses = mockBuses.filter(bus =>
     bus.route.includes(searchTerm) || bus.destination.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -63,7 +63,7 @@ export default function CrowdInsightsPage() {
         </div>
 
         {/* Search Bar */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -75,9 +75,9 @@ export default function CrowdInsightsPage() {
               <div className="p-3 text-muted-foreground">
                 <Search className="w-6 h-6" />
               </div>
-              <input 
-                type="text" 
-                placeholder="Search your route number or destination..." 
+              <input
+                type="text"
+                placeholder="Search your route number or destination..."
                 className="flex-grow bg-transparent border-none outline-none text-lg font-medium px-2"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -102,14 +102,14 @@ export default function CrowdInsightsPage() {
                     <Card className="border-none shadow-xl bg-card/40 backdrop-blur-xl rounded-2xl overflow-hidden hover:bg-card/60 transition-colors group cursor-pointer relative">
                       {/* Occupancy Indicator Line */}
                       <div className="absolute left-0 top-0 h-full w-1.5 bg-border/50">
-                        <motion.div 
+                        <motion.div
                           className={`w-full bottom-0 absolute ${getOccupancyColor(bus.occupancy)}`}
                           initial={{ height: 0 }}
                           animate={{ height: `${bus.occupancy}%` }}
                           transition={{ duration: 1.5, ease: "easeOut" }}
                         />
                       </div>
-                      
+
                       <CardContent className="p-6 pl-8 flex flex-col md:flex-row items-center gap-6 justify-between">
                         <div className="flex items-center gap-6 w-full md:w-auto">
                           <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-2xl font-black shadow-lg pl-1 ${getOccupancyColor(bus.occupancy)} text-white`}>
@@ -150,9 +150,9 @@ export default function CrowdInsightsPage() {
                 ))}
               </div>
             ) : (
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className="text-center p-12 bg-card/20 rounded-[2rem] border border-border/40"
               >
                 <Info className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />

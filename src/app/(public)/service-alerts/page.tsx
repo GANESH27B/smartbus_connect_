@@ -27,8 +27,8 @@ export default function ServiceAlertsPage() {
   };
 
   const filteredAlerts = mockAlerts.filter(alert => {
-    const matchesSearch = alert.reason.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          alert.affectedRoutes.some(r => r.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = alert.reason.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alert.affectedRoutes.some(r => r.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilter = filterType === "all" || alert.type === filterType;
     return matchesSearch && matchesFilter;
   });
@@ -62,7 +62,7 @@ export default function ServiceAlertsPage() {
         </div>
 
         {/* Search & Filter */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -74,16 +74,16 @@ export default function ServiceAlertsPage() {
                 <div className="p-3 text-muted-foreground">
                   <Search className="w-5 h-5" />
                 </div>
-                <input 
-                  type="text" 
-                  placeholder="Search by route (e.g., 42, Express)" 
+                <input
+                  type="text"
+                  placeholder="Search by route (e.g., 42, Express)"
                   className="w-full bg-transparent border-none outline-none text-base font-medium px-2"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
               {[
                 { id: "all", label: "All Alerts" },
@@ -94,11 +94,10 @@ export default function ServiceAlertsPage() {
                 <button
                   key={filter.id}
                   onClick={() => setFilterType(filter.id)}
-                  className={`px-6 py-4 rounded-xl font-bold whitespace-nowrap transition-all flex-shrink-0 ${
-                    filterType === filter.id 
-                      ? "bg-foreground text-background shadow-lg shadow-foreground/20" 
-                      : "bg-card/80 border border-border/50 hover:bg-card/100 text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`px-6 py-4 rounded-xl font-bold whitespace-nowrap transition-all flex-shrink-0 ${filterType === filter.id
+                    ? "bg-foreground text-background shadow-lg shadow-foreground/20"
+                    : "bg-card/80 border border-border/50 hover:bg-card/100 text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {filter.label}
                 </button>
@@ -171,9 +170,9 @@ export default function ServiceAlertsPage() {
                 );
               })
             ) : (
-              <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 className="text-center p-16 bg-card/20 rounded-[2rem] border border-border/40 backdrop-blur-xl"
               >
                 <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/20">

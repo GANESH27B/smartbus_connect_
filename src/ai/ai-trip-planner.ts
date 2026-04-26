@@ -60,6 +60,7 @@ const AiTripPlannerInputSchema = z.object({
   passengers: z.number().optional().describe('Number of passengers traveling.'),
   days: z.number().optional().describe('Number of days for the trip.'),
   budgetStyle: z.enum(['Simple', 'Medium', 'Luxury']).optional().describe('The desired budget or travel style.'),
+  language: z.string().optional().describe('The language in which the trip plan should be generated (e.g., "hi" for Hindi, "ta" for Tamil). Defaults to English.'),
 });
 
 export type AiTripPlannerInput = z.infer<typeof AiTripPlannerInputSchema>;
@@ -96,11 +97,14 @@ const prompt = ai.definePrompt({
   Duration of Trip: {{{days}}} days
   Travel Style: {{{budgetStyle}}}
   User Preferences: {{{notes}}}
+  Output Language: {{{language}}}
 
   OUTPUT INSTRUCTIONS:
   - YOU MUST RETURN ONLY A VALID JSON OBJECT.
   - DO NOT INCLUDE ANY CONVERSATIONAL TEXT OR MARKDOWN TRIPLE BACKTICKS.
-  - USE ONLY ENGLISH CHARACTERS.
+  - IMPORTANT: ALL TEXT VALUES (summary, instruction, description, locationName, landmark, eta) MUST BE IN THE REQUESTED OUTPUT LANGUAGE: {{{language}}}.
+  - If {{{language}}} is "hi", use Hindi. If "ta", use Tamil. If "te", use Telugu. If "kn", use Kannada. If "ml", use Malayalam. If "mr", use Marathi. If "bn", use Bengali. If "gu", use Gujarati. If "pa", use Punjabi.
+  - If no language is specified or it is "en", use English.
 
   The plan should include:
   1. A short summary of the trip, mentioning the duration and style where appropriate.
@@ -115,7 +119,7 @@ const prompt = ai.definePrompt({
   3. Total estimated travel time (eta).
   4. Total estimated cost (estimatedCost) in local currency (e.g. ₹60), adjusted for the number of passengers, trip duration, and including estimated auto fares.
 
-  Example JSON format:
+  Example JSON format (if English):
   {
     "summary": "A smooth 40-minute journey via the North Line.",
     "steps": [

@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 };
 
 import { GoogleMapsProvider } from '@/context/GoogleMapsContext';
+import { LanguageProvider } from '@/context/LanguageContext';
 
 export default function RootLayout({
   children,
@@ -29,11 +30,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body className={`${outfit.variable} ${inter.variable} font-sans antialiased selection:bg-primary/20`}>
-        <AuthProvider>
-          <GoogleMapsProvider>
-            {children}
-          </GoogleMapsProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <GoogleMapsProvider>
+              {children}
+            </GoogleMapsProvider>
+          </AuthProvider>
+        </LanguageProvider>
         <Toaster />
       </body>
     </html>

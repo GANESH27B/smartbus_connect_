@@ -189,33 +189,33 @@ function LiveMap({
         )}
 
         {activeMarker && (
-           <InfoWindow
-             position={{ lat: activeMarker.lat, lng: activeMarker.lng }}
-             onCloseClick={() => setActiveMarker(null)}
-           >
-             <div className="p-0 min-w-[240px] overflow-hidden rounded-2xl bg-white text-slate-900 border-none shadow-2xl">
-               {'number' in activeMarker ? (
-                 <div className="flex flex-col">
-                   <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
-                     <div>
-                       <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Fleet Vehicle</p>
-                       <h3 className="text-2xl font-black tracking-tighter italic">#{activeMarker.number}</h3>
-                     </div>
-                   </div>
-                   <div className="p-4 space-y-4">
-                     <p className="font-bold text-slate-700">Line {allRoutes.find((r: any) => (r._id === activeMarker.routeId || r.id === activeMarker.routeId))?.number || 'Active'}</p>
-                     <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-11">
-                       Track Live Journey
-                     </Button>
-                   </div>
-                 </div>
-               ) : (
-                 <div className="p-4">
-                   <h3 className="text-xl font-black italic tracking-tight leading-tight">{activeMarker.name}</h3>
-                 </div>
-               )}
-             </div>
-           </InfoWindow>
+          <InfoWindow
+            position={{ lat: activeMarker.lat, lng: activeMarker.lng }}
+            onCloseClick={() => setActiveMarker(null)}
+          >
+            <div className="p-0 min-w-[240px] overflow-hidden rounded-2xl bg-white text-slate-900 border-none shadow-2xl">
+              {'number' in activeMarker ? (
+                <div className="flex flex-col">
+                  <div className="p-4 bg-slate-900 text-white flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Fleet Vehicle</p>
+                      <h3 className="text-2xl font-black tracking-tighter italic">#{activeMarker.number}</h3>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-4">
+                    <p className="font-bold text-slate-700">Line {allRoutes.find((r: any) => (r._id === activeMarker.routeId || r.id === activeMarker.routeId))?.number || 'Active'}</p>
+                    <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-11">
+                      Track Live Journey
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4">
+                  <h3 className="text-xl font-black italic tracking-tight leading-tight">{activeMarker.name}</h3>
+                </div>
+              )}
+            </div>
+          </InfoWindow>
         )}
       </GoogleMap>
 

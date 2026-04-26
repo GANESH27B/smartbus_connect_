@@ -64,11 +64,11 @@ export default function DestinationAlarmPage() {
       (alarmIntervalRef as any).current_sound = null;
     }
     if (oscRef.current) {
-      try { oscRef.current.stop(); } catch (e) {}
+      try { oscRef.current.stop(); } catch (e) { }
       oscRef.current = null;
     }
     if (audioCtxRef.current) {
-      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current.close().catch(() => { });
       audioCtxRef.current = null;
     }
   }, []);
@@ -88,7 +88,7 @@ export default function DestinationAlarmPage() {
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       audioCtxRef.current = ctx;
-      
+
       const playChime = () => {
         const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
         notes.forEach((freq, i) => {
@@ -96,14 +96,14 @@ export default function DestinationAlarmPage() {
           const gain = ctx.createGain();
           osc.type = "sine";
           osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.15);
-          
+
           gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
           gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.15 + 0.05);
           gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + i * 0.15 + 0.6);
-          
+
           osc.connect(gain);
           gain.connect(ctx.destination);
-          
+
           osc.start(ctx.currentTime + i * 0.15);
           osc.stop(ctx.currentTime + i * 0.15 + 0.6);
         });
@@ -114,7 +114,7 @@ export default function DestinationAlarmPage() {
         // We only clear this interval in stopAlarm explicitly
         playChime();
       }, 2500); // 2.5 seconds loop for a calmer experience
-      
+
       (alarmIntervalRef as any).current_sound = soundInterval;
     } catch (e) {
       console.error("Audio error", e);
@@ -199,7 +199,7 @@ export default function DestinationAlarmPage() {
                   onSelect={handlePlaceSelect}
                   placeholder="Search for a stop…"
                 />
-                
+
                 <div className={cn("w-full transition-all duration-300 rounded-2xl overflow-hidden border relative", isMapExpanded ? "h-[500px]" : "h-48")}>
                   {isLoaded ? (
                     <>
@@ -215,7 +215,7 @@ export default function DestinationAlarmPage() {
                             // Instant feedback
                             setDestination({ lat, lng, name: "Locating..." });
                             setSearchQuery("Locating stop...");
-                            
+
                             // Reverse geocode
                             fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=en`)
                               .then(res => res.json())
@@ -234,9 +234,9 @@ export default function DestinationAlarmPage() {
                         {destination && <Marker position={destination} />}
                         {userLocation && <Marker position={userLocation} icon={{ path: 0, scale: 6, fillColor: '#3b82f6', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 }} />}
                       </GoogleMap>
-                      <Button 
-                        variant="secondary" 
-                        size="icon" 
+                      <Button
+                        variant="secondary"
+                        size="icon"
                         className="absolute bottom-4 right-4 h-10 w-10 rounded-xl shadow-lg bg-white/90 backdrop-blur hover:bg-white transition-all z-20"
                         onClick={() => setIsMapExpanded(!isMapExpanded)}
                         title={isMapExpanded ? "Minimize Map" : "Expand Map"}
@@ -257,12 +257,12 @@ export default function DestinationAlarmPage() {
           )}
 
           {isTracking && (
-             <div className="text-center py-20">
-               <h2 className="text-2xl font-black mb-4">Tracking Journey</h2>
-               <div className="text-6xl font-black text-primary">{distanceRemaining?.toFixed(1)} km</div>
-               <p className="text-muted-foreground mt-4">Safe travels! We'll alert you soon.</p>
-                <Button variant="destructive" className="mt-12 w-full h-14 rounded-2xl" onClick={cancelJourney}>Cancel Alarm</Button>
-             </div>
+            <div className="text-center py-20">
+              <h2 className="text-2xl font-black mb-4">Tracking Journey</h2>
+              <div className="text-6xl font-black text-primary">{distanceRemaining?.toFixed(1)} km</div>
+              <p className="text-muted-foreground mt-4">Safe travels! We'll alert you soon.</p>
+              <Button variant="destructive" className="mt-12 w-full h-14 rounded-2xl" onClick={cancelJourney}>Cancel Alarm</Button>
+            </div>
           )}
 
           {hasArrived && (

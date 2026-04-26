@@ -1,9 +1,12 @@
+"use client";
 
 import React from "react";
 import Link from "next/link";
 import { BusFront, ExternalLink, Github, Twitter, Linkedin, Mail, MapPin, Phone, Heart } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
+  const { t } = useLanguage();
   const year = new Date().getFullYear();
 
   return (
@@ -24,7 +27,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-base text-muted-foreground leading-relaxed font-medium">
-              We're redefining how you navigate the city. Vibrant, intelligent, and always on time.
+              {t('footer_desc') || "We're redefining how you navigate the city. Vibrant, intelligent, and always on time."}
             </p>
             <div className="flex items-center space-x-4">
               {[
@@ -39,9 +42,8 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
           <div className="space-y-6">
-            <h3 className="font-headline font-black text-xs uppercase tracking-[0.3em] text-foreground opacity-40">The Platform</h3>
+            <h3 className="font-headline font-black text-xs uppercase tracking-[0.3em] text-foreground opacity-40">{t('footer_platform') || 'The Platform'}</h3>
             <ul className="space-y-4">
               {[
                 { label: "AI Trip Planner", href: "/trip-planner" },
@@ -59,7 +61,7 @@ export default function Footer() {
 
           {/* Resources */}
           <div className="space-y-6">
-            <h3 className="font-headline font-black text-xs uppercase tracking-[0.3em] text-foreground opacity-40">Knowledge</h3>
+            <h3 className="font-headline font-black text-xs uppercase tracking-[0.3em] text-foreground opacity-40">{t('footer_knowledge') || 'Knowledge'}</h3>
             <ul className="space-y-4">
               <li>
                 <Link href="https://www.google.com/search?q=official+state+road+transport+corporation+websites" target="_blank" rel="noopener noreferrer" className="text-sm font-bold text-muted-foreground hover:text-primary transition-all flex items-center group">

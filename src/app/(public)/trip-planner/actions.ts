@@ -11,6 +11,7 @@ const formSchema = z.object({
   passengers: z.number().min(1).default(1),
   days: z.number().min(1).default(1),
   style: z.enum(['Simple', 'Medium', 'Luxury']).default('Simple'),
+  language: z.string().optional(),
 });
 
 type PlanTripResult = {
@@ -40,7 +41,7 @@ export async function planTripAction(values: z.infer<typeof formSchema>): Promis
   }
 
   try {
-    const { start, destination, notes, passengers, days, style } = validatedFields.data;
+    const { start, destination, notes, passengers, days, style, language } = validatedFields.data;
     const plan: AiTripPlannerOutput = await aiTripPlanner({
       startLocation: start,
       destination: destination,
@@ -48,6 +49,7 @@ export async function planTripAction(values: z.infer<typeof formSchema>): Promis
       passengers: passengers,
       days: days,
       budgetStyle: style,
+      language: language,
     });
 
     const waypoints = plan.steps?.slice(1, -1).map(step => step.locationName).filter(Boolean) || [];
@@ -59,7 +61,8 @@ export async function planTripAction(values: z.infer<typeof formSchema>): Promis
   Passengers: ${passengers}
   Days: ${days}
   Style: ${style}
-  User Preferences: ${notes || ""}`;
+  User Preferences: ${notes || ""}
+  Language: ${language || "en"}`;
 
     const tripPlan: TripPlan = {
       summary: plan.summary,

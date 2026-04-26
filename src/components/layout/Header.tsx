@@ -23,22 +23,26 @@ import { stateTransportLinks } from "@/lib/state-transport-links";
 import { Separator } from "../ui/separator";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/LanguageContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const navLinks = [
-  { href: "/", label: "Home", icon: <Home className="h-4 w-4" /> },
-  { href: "/trip-planner", label: "AI Planner", icon: <Bot className="h-4 w-4" /> },
-  { href: "/map-search", label: "Map", icon: <Map className="h-4 w-4" /> },
+const navLinks = (t: (key: string) => string) => [
+  { href: "/", label: t('nav_home'), icon: <Home className="h-4 w-4" /> },
+  { href: "/trip-planner", label: t('nav_trip_planner'), icon: <Bot className="h-4 w-4" /> },
+  { href: "/map-search", label: t('nav_map_search'), icon: <Map className="h-4 w-4" /> },
   { href: "/destination-alarm", label: "Stop Alarm", icon: <Bell className="h-4 w-4" /> },
   { href: "https://www.google.com/maps/search/bus+stop/", label: "Nearby Stands", icon: <Bus className="h-4 w-4" />, isExternal: true },
 ];
 
 export default function Header() {
+  const { t } = useLanguage();
   const pathname = usePathname();
   const [isMenuOpen, setMenuOpen] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
   const { user, signOut } = useAuth();
   const router = useRouter();
+
+  const links = navLinks(t);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -85,7 +89,7 @@ export default function Header() {
             </Link>
 
             <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-              {navLinks.map((link) => {
+              {links.map((link) => {
                 const isExternal = link.isExternal;
                 const content = (
                   <>
@@ -205,7 +209,7 @@ export default function Header() {
                 </DropdownMenu>
               ) : (
                 <Button asChild className="rounded-xl px-8 h-10 shadow-lg shadow-primary/30 bg-vibrant-gradient font-black text-xs uppercase tracking-widest border-none hover:scale-105 transition-transform">
-                  <Link href="/login">Sign In</Link>
+                  <Link href="/login">{t('Sign In') || 'Sign In'}</Link>
                 </Button>
               )}
             </div>
@@ -239,7 +243,7 @@ export default function Header() {
                   <ScrollArea className="flex-1 px-4 py-8">
                     <div className="space-y-2 mb-10">
                       <p className="px-5 text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-4">Core Navigation</p>
-                      {navLinks.map((link) => {
+                      {links.map((link) => {
                         const isExternal = link.isExternal;
                         const className = cn(
                           "flex items-center gap-4 px-5 py-4 text-base font-bold transition-all rounded-[1.25rem]",

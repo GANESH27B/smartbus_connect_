@@ -93,7 +93,7 @@ export default function SafeAndSecurePage() {
         </div>
 
         {/* Live SOS CTA */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4, duration: 0.5 }}
@@ -106,7 +106,7 @@ export default function SafeAndSecurePage() {
                   <HeartPulse className="w-8 h-8 text-rose-500" /> Constant Monitoring
                 </h3>
                 <p className="text-lg text-muted-foreground font-medium">
-                  Our central command center uses AI-driven anomaly detection on our <Navigation className="inline w-4 h-4 text-blue-500 mx-1"/> Live Fleet Tracking to automatically deploy help if a bus deviates unexpectedly.
+                  Our central command center uses AI-driven anomaly detection on our <Navigation className="inline w-4 h-4 text-blue-500 mx-1" /> Live Fleet Tracking to automatically deploy help if a bus deviates unexpectedly.
                 </p>
               </div>
               <Button size="lg" className="rounded-2xl h-16 px-10 bg-rose-500 hover:bg-rose-600 text-white font-black text-lg shadow-xl shadow-rose-500/30 whitespace-nowrap">

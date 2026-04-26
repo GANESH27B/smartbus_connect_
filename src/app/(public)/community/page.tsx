@@ -72,8 +72,8 @@ export default function CommunityPage() {
               </CardHeader>
               <CardContent className="px-8 pb-10 space-y-6">
                 <div>
-                  <textarea 
-                    placeholder="e.g., Heavy traffic near the stadium, Route 42 is delayed by 10 mins..." 
+                  <textarea
+                    placeholder="e.g., Heavy traffic near the stadium, Route 42 is delayed by 10 mins..."
                     rows={4}
                     value={reportText}
                     onChange={(e) => setReportText(e.target.value)}
@@ -137,7 +137,7 @@ export default function CommunityPage() {
                   Earn points by reporting accurate statuses and verifying others.
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent className="px-8 pb-10">
                 <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-6 mb-8 text-center shadow-inner">
                   <div className="text-sm font-bold text-rose-600/80 uppercase tracking-wider mb-2">Your Current Rank</div>
@@ -147,8 +147,8 @@ export default function CommunityPage() {
 
                 <div className="space-y-4">
                   {leaderboards.map((user) => (
-                    <div 
-                      key={user.rank} 
+                    <div
+                      key={user.rank}
                       className={`flex items-center gap-4 p-4 rounded-xl transition-all ${user.isUser ? 'bg-rose-500 fill-white text-white shadow-lg shadow-rose-500/30 -mx-2 px-6' : 'bg-background border border-border/50'}`}
                     >
                       <div className={`font-black text-xl w-6 text-center ${user.isUser ? 'text-white' : 'text-muted-foreground'}`}>
